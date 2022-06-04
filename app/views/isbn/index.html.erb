@@ -1,0 +1,130 @@
+
+<style>
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  input[type="radio"],
+  input[type="radio"] + label {
+    cursor: pointer;
+  }
+
+  #resultArea {
+    cursor: not-allowed;
+    overflow: hidden;
+  }
+</style>
+
+<div class="container">
+  <div class="form-horizontal col-10 offset-1 block">
+    &nbsp;
+
+    <div class="row">
+      <div class="col-5">
+        <div class="row">
+          <div class="col-2">
+            <label class="form-label">Action:</label>
+          </div>
+
+          <div class="col offset-sm-1 col-sm-9">
+            <input
+              checked
+              id="get_check_digit_rdb"
+              type="radio"
+              name="action"
+              data-button-text="Get Check Digit"
+              onchange="update_info(this);">
+
+            <label for="get_check_digit_rdb">Get Check Digit</label>
+          </div>
+
+          <div class="col offset-sm-3 col-sm-9">
+            <input
+              id="check_validity_rdb"
+              type="radio"
+              name="action"
+              data-button-text="Check Validity"
+              onchange="update_info(this);">
+
+            <label for="check_validity_rdb">Check Validity</label>
+          </div>
+        </div>
+
+        &nbsp;
+
+        <div class="row">
+          <div class="col-2">
+            <label for="isbn" class="form-label">ISBN:</label>
+          </div>
+
+          <div class="col-10">
+            <input type="text" class="form-control" id="isbn">
+          </div>
+        </div>
+
+        &nbsp;
+      </div>
+
+      <div class="col" style="display: flex; padding-bottom: 1%;">
+        <textarea
+          readonly
+          id="resultArea"
+          class="form-control alert"
+          placeholder="Result shows up here..."></textarea>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <input
+          id="btnRunAction"
+          type="button"
+          class="form-control btn btn-primary"
+          value="Get Check Digit"
+          onclick="run_action();">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function run_action() {
+    let route = get_check_digit_rdb.checked
+        ? 'get_check_digit'
+        : 'check_validity';
+
+    let isbnNumber = isbn.value;
+
+    let url = `api/${route}/${isbnNumber}`;
+
+    fetch(url).then(resp => {
+      switch (resp.status) {
+        case 200:
+          resp.json().then(json => {
+            resultArea.classList.add('alert-success');
+            resultArea.classList.remove('alert-danger');
+            resultArea.value = json.result;
+          });
+        break;
+
+        case 400:
+          resp.json().then(json => {
+            resultArea.classList.add('alert-danger');
+            resultArea.classList.remove('alert-success');
+            resultArea.value = json.error_message;
+          });
+        break;
+      }
+    });
+  }
+
+  function update_info(element) {
+    let buttonText = element.getAttribute('data-button-text');
+
+    resultArea.value = '';
+    btnRunAction.value = buttonText;
+  }
+</script>
